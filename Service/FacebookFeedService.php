@@ -11,6 +11,7 @@ use Thelia\Model\Base\CountryQuery;
 use Thelia\Model\ConfigQuery;
 use Thelia\Model\Country;
 use Thelia\Model\Currency;
+use Thelia\Model\LangQuery;
 use Thelia\Model\ProductQuery;
 use Thelia\TaxEngine\Calculator;
 use Thelia\Tools\URL;
@@ -32,7 +33,11 @@ class FacebookFeedService
         $country = $this->getDefaultCountry();
         $baseUrl = URL::getInstance()->getBaseUrl();
 
-        $productItems = $this->getProductItems($limit,$offset);
+        if (ConfigQuery::isMultiDomainActivated()) {
+            $baseUrl = LangQuery::create()->findOneByLocale($locale)->getUrl();
+        }
+
+        $productItems = $this->getProductItems($limit,$offset, $locale);
         if ($output){
             $progressBar = new ProgressBar($output, count($productItems));
         }
@@ -229,6 +234,12 @@ class FacebookFeedService
 
     private function getUrl($product, $locale): string
     {
+        if (ConfigQuery::isMultiDomainActivated()) {
+            $baseUrl = LangQuery::create()->findOneByLocale($locale)->getUrl();
+
+            return $baseUrl . $this->findUrlFromView('product', $product['ID_PRODUCT'], $locale);
+        }
+
         $urlManager = URL::getInstance();
 
         if ($product['REWRITTEN_URL'] === null) {
@@ -236,5 +247,27 @@ class FacebookFeedService
         }
 
         return $urlManager->absoluteUrl($product['REWRITTEN_URL']);
+    }
+
+    protected function findUrlFromView(string $view, string $viewId, string $locale): ?string
+    {
+        if (null !== $rewritingRetriever = URL::getInstance()->retrieve($view, $viewId, $locale)) {
+            $url =  !empty($rewritingRetriever->rewrittenUrl) ? $rewritingRetriever->rewrittenUrl : $rewritingRetriever->url;
+
+            return $this->generateUriFromUrl($url);
+        }
+
+        return null;
+    }
+
+    protected function generateUriFromUrl($url): ?string
+    {
+        $url = parse_url($url);
+
+        if (!empty($url['path'])) {
+            return $url['path'] . (!empty($url['query']) ? '?' . $url['query'] : '');
+        }
+
+        return null;
     }
 }
