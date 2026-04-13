@@ -21,7 +21,7 @@ class FacebookFeedProductExcluded implements ResourceAddonInterface
     public ProductSaleElementsResource $productSaleElements;
 
     #[Groups([ProductSaleElementsResource::GROUP_ADMIN_READ, ProductSaleElementsResource::GROUP_ADMIN_WRITE])]
-    public bool $isExcluded;
+    public bool $isExcluded = false;
 
     /**
      * @throws PropelException
@@ -55,9 +55,8 @@ class FacebookFeedProductExcluded implements ResourceAddonInterface
      */
     public function doSave(ActiveRecordInterface|ProductSaleElements $activeRecord, PropelResourceInterface $abstractPropelResource): void
     {
-        $model = new \FacebookFeed\Model\FacebookFeedProductExcluded();
-
-        if (null === FacebookFeedProductExcludedQuery::create()->useProductSaleElementsQuery()->filterById($activeRecord->getId())->endUse()->findOne()){
+        if (null === $model = FacebookFeedProductExcludedQuery::create()->useProductSaleElementsQuery()->filterById($activeRecord->getId())->endUse()->findOne()){
+            $model = new \FacebookFeed\Model\FacebookFeedProductExcluded();
             $model->setProductSaleElements($activeRecord);
         }
 
