@@ -1,6 +1,6 @@
 <?php
 
-namespace GoogleShoppingXml\API\Resource;
+namespace FacebookFeed\API\Resource;
 
 use FacebookFeed\Model\FacebookFeedProductExcludedQuery;
 use FacebookFeed\Model\Map\FacebookFeedProductExcludedTableMap;
