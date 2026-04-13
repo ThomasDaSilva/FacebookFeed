@@ -254,13 +254,15 @@ class FacebookFeedService
         if (null !== $rewritingRetriever = URL::getInstance()->retrieve($view, $viewId, $locale)) {
             $url =  !empty($rewritingRetriever->rewrittenUrl) ? $rewritingRetriever->rewrittenUrl : $rewritingRetriever->url;
 
-            return $this->generateUriFromUrl($url);
+            if (null !== $url) {
+                return $this->generateUriFromUrl($url);
+            }
         }
 
         return null;
     }
 
-    protected function generateUriFromUrl($url): ?string
+    protected function generateUriFromUrl(string $url): ?string
     {
         $url = parse_url($url);
 
