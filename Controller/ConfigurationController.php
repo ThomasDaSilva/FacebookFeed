@@ -10,6 +10,7 @@ use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
+use Thelia\Model\LangQuery;
 use Thelia\Tools\URL;
 
 #[Route('/admin/module/FacebookFeed', name: 'FacebookFeed_configuration_controller_')]
@@ -37,7 +38,10 @@ class ConfigurationController extends AdminController
         if (null !== $response = $this->checkAuth(AdminResources::MODULE, FacebookFeed::DOMAIN_NAME, AccessManager::UPDATE)) {
             return $response;
         }
-        $facebookFeedService->exportFacebookFeed();
+
+        foreach (LangQuery::create()->findByActive(1) as $lang) {
+            $facebookFeedService->exportFacebookFeed(null, null, null, $lang->getLocale());
+        }
 
         return $this->generateRedirect(
             URL::getInstance()->absoluteUrl('admin/module/FacebookFeed')
